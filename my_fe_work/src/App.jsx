@@ -10,6 +10,7 @@ import Home from './pages/Home'
 import Signup from './pages/Signup'
 import SignupSuccess from './pages/SignupSuccess'
 import Login from './pages/Login'
+import KakaoCallback from './pages/KakaoCallback'
 import './App.css'
 
 /**
@@ -46,6 +47,12 @@ function App() {
         
         {/* "/login" 경로: Login 페이지를 렌더링 */}
         <Route path="/login" element={<Login />} />
+        
+        {/* "/auth/kakao/callback" 경로: 카카오 로그인 콜백 페이지를 렌더링 */}
+        <Route path="/auth/kakao/callback" element={<KakaoCallback />} />
+        
+        {/* "/oauth/callback" 경로: OAuth 콜백 페이지 (카카오 로그인 포함) */}
+        <Route path="/oauth/callback" element={<KakaoCallback />} />
       </Routes>
     </BrowserRouter>
   )

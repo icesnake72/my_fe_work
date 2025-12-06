@@ -4,8 +4,14 @@
  * axios 인스턴스를 생성하고 인터셉터를 설정하여
  * 모든 API 요청에 Access Token을 자동으로 추가하고,
  * 401 에러 발생 시 Refresh Token으로 자동 갱신을 시도합니다.
+ * 
+ * ## 보안 개선
+ * 
+ * Access Token은 메모리에만 저장하여 XSS 공격에 대한 보안을 강화했습니다.
+ * sessionStorage 대신 메모리 변수를 사용합니다.
  */
 import axios from 'axios'
+import { getAccessToken, setAccessToken } from './tokenStorage'
 
 /**
  * axios 인스턴스 생성
@@ -21,24 +27,24 @@ const apiClient = axios.create({
   baseURL: '/api',  // 모든 요청의 기본 경로
   headers: {
     'Content-Type': 'application/json'  // JSON 형식의 데이터를 전송함을 명시
-  }
+  },
+  withCredentials: true // 쿠키 전송을 위해 필요 (Refresh Token이 쿠키로 전송되는 경우)
 })
 
 /**
  * 요청 인터셉터
  * 
  * 모든 API 요청이 전송되기 전에 실행됩니다.
- * sessionStorage에서 Access Token을 가져와 Authorization 헤더에 자동으로 추가합니다.
+ * 메모리에서 Access Token을 가져와 Authorization 헤더에 자동으로 추가합니다.
  * 
  * 동작 과정:
- * 1. sessionStorage에서 'accessToken'을 가져옵니다.
+ * 1. 메모리에서 Access Token을 가져옵니다 (XSS 공격에 상대적으로 안전).
  * 2. 토큰이 존재하면 'Bearer {token}' 형식으로 Authorization 헤더에 추가합니다.
  * 3. 수정된 config 객체를 반환하여 요청을 계속 진행합니다.
  * 
- * 참고: 
- * - 메모리에서 토큰을 가져오는 것이 이상적이지만,
- *   인터셉터는 React Context에 접근할 수 없으므로 sessionStorage를 사용합니다.
- * - sessionStorage는 AuthContext에서 자동으로 동기화되므로 안전합니다.
+ * 보안 개선:
+ * - sessionStorage 대신 메모리 변수를 사용하여 XSS 공격에 대한 보안 강화
+ * - 인터셉터는 React Context에 접근할 수 없으므로 모듈 레벨 변수 사용
  */
 apiClient.interceptors.request.use(
   /**
@@ -48,9 +54,8 @@ apiClient.interceptors.request.use(
    * @returns {Object} - 수정된 config 객체
    */
   (config) => {
-    // sessionStorage에서 Access Token을 가져옵니다.
-    // AuthContext에서 토큰이 변경될 때마다 sessionStorage에도 저장되므로 항상 최신 상태입니다.
-    const token = sessionStorage.getItem('accessToken')
+    // 메모리에서 Access Token을 가져옵니다 (XSS 공격에 상대적으로 안전).
+    const token = getAccessToken()
     
     // 토큰이 존재하는 경우 Authorization 헤더에 추가합니다.
     if (token) {
@@ -119,35 +124,49 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true
 
       try {
-        // sessionStorage에서 Refresh Token을 가져옵니다.
+        // 웹 브라우저에서는 Refresh Token이 쿠키로 자동 전송되므로 요청 바디 없음
+        // 모바일의 경우 sessionStorage에서 refreshToken을 가져와서 보내야 함
         const refreshToken = sessionStorage.getItem('refreshToken')
         
-        // Refresh Token이 존재하는 경우
-        if (refreshToken) {
-          // Refresh Token을 사용하여 새 Access Token을 요청합니다.
-          // 일반 axios를 사용하여 인터셉터를 우회합니다 (무한 루프 방지).
-          const response = await axios.post('/api/refresh', {
-            refreshToken: refreshToken
-          })
-
-          // 새 Access Token을 추출합니다.
-          // 응답 구조에 따라 response.data.accessToken 또는 response.data.data.accessToken일 수 있습니다.
-          const newAccessToken = response.data.accessToken || response.data.data?.accessToken
-          
-          // 새 Access Token을 sessionStorage에 저장합니다.
-          // AuthContext의 useEffect가 이를 감지하여 메모리 상태도 업데이트합니다.
-          sessionStorage.setItem('accessToken', newAccessToken)
-          
-          // 원래 요청의 Authorization 헤더를 새 토큰으로 업데이트합니다.
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
-          
-          // 업데이트된 설정으로 원래 요청을 재시도합니다.
-          return apiClient(originalRequest)
+        // Refresh Token을 사용하여 새 Access Token을 요청합니다.
+        // 일반 axios를 사용하여 인터셉터를 우회합니다 (무한 루프 방지).
+        // 쿠키로 전송되는 경우 요청 바디 없음, 모바일인 경우만 요청 바디에 포함
+        const requestBody = refreshToken ? { refreshToken } : undefined
+        const requestConfig = {
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          withCredentials: true // 쿠키 전송을 위해 필요
         }
+        
+        console.log('Refresh Token 요청:', {
+          hasRefreshTokenInStorage: !!refreshToken,
+          hasCookies: document.cookie.includes('refreshToken'),
+          requestBody: requestBody ? '있음' : '없음 (쿠키 사용)'
+        })
+        
+        const response = await axios.post('/api/refresh', requestBody, requestConfig)
+
+        // 새 Access Token을 추출합니다.
+        // API 가이드에 따르면 응답 구조: { success: true, data: { accessToken, user } }
+        const newAccessToken = response.data.data?.accessToken || response.data.accessToken
+        
+        if (!newAccessToken) {
+          throw new Error('토큰 갱신 응답에 Access Token이 없습니다.')
+        }
+        
+        // 새 Access Token을 메모리에 저장합니다 (XSS 공격에 상대적으로 안전).
+        setAccessToken(newAccessToken)
+        
+        // 원래 요청의 Authorization 헤더를 새 토큰으로 업데이트합니다.
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
+        
+        // 업데이트된 설정으로 원래 요청을 재시도합니다.
+        return apiClient(originalRequest)
       } catch (refreshError) {
         // Refresh Token도 만료되었거나 유효하지 않은 경우
         // 모든 인증 정보를 제거하고 로그인 페이지로 이동합니다.
-        sessionStorage.removeItem('accessToken')
+        setAccessToken(null) // 메모리에서 Access Token 제거
         sessionStorage.removeItem('refreshToken')
         sessionStorage.removeItem('user')
         

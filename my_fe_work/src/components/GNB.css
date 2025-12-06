@@ -75,6 +75,26 @@
   border-color: rgba(102, 126, 234, 0.5);
 }
 
+.logout-button {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.logout-button:hover {
+  background: rgba(244, 67, 54, 0.2);
+  border-color: rgba(244, 67, 54, 0.5);
+}
+
+.gnb-user-info {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  background: rgba(102, 126, 234, 0.1);
+}
+
 /* 라이트 모드일 때 스타일 */
 @media (prefers-color-scheme: light) {
   .gnb {
@@ -103,6 +123,20 @@
   .auth-link:hover {
     background: rgba(79, 195, 247, 0.2);
     border-color: rgba(79, 195, 247, 0.5);
+  }
+
+  .logout-button {
+    border-color: rgba(26, 26, 26, 0.3);
+  }
+
+  .logout-button:hover {
+    background: rgba(244, 67, 54, 0.2);
+    border-color: rgba(244, 67, 54, 0.5);
+  }
+
+  .gnb-user-info {
+    color: rgba(26, 26, 26, 0.9);
+    background: rgba(79, 195, 247, 0.1);
   }
 }
 

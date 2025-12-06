@@ -1,212 +1,252 @@
-# 프로젝트 의존성 가이드
+# 프로젝트 의존성 설치 가이드
 
-이 문서는 프로젝트에 필요한 모든 의존성과 설치 방법을 설명합니다.
+> 이 프로젝트를 구동하기 위해 필요한 패키지들의 설치 가이드입니다.
+> Vite는 이미 설치했다고 가정합니다.
 
-## 📦 의존성 목록
+---
 
-### 프로덕션 의존성 (Production Dependencies)
+## 📋 목차
 
-프로덕션 환경에서 실행되는 애플리케이션에 필요한 패키지입니다.
+1. [필수 의존성](#필수-의존성)
+2. [선택적 의존성](#선택적-의존성)
+3. [개발 의존성](#개발-의존성)
+4. [설치하지 않아도 되는 것](#설치하지-않아도-되는-것)
+5. [빠른 설치 가이드](#빠른-설치-가이드)
 
-| 패키지 | 버전 | 용도 |
-|--------|------|------|
-| `react` | ^19.2.0 | React 라이브러리 (UI 프레임워크) |
-| `react-dom` | ^19.2.0 | React DOM 렌더링 (브라우저용) |
-| `react-router-dom` | ^7.9.6 | 클라이언트 사이드 라우팅 (페이지 네비게이션) |
-| `axios` | ^1.13.2 | HTTP 클라이언트 (API 요청) |
-| `three` | ^0.181.2 | 3D 그래픽 라이브러리 (3D 도형 렌더링) |
-| `@react-three/fiber` | ^9.4.0 | Three.js를 React 컴포넌트로 사용하기 위한 라이브러리 |
-| `@react-three/drei` | ^10.7.7 | Three.js 유틸리티 및 헬퍼 함수 모음 |
-| `@fortawesome/fontawesome-free` | ^7.1.0 | Font Awesome 아이콘 라이브러리 |
+---
 
-### 개발 의존성 (Development Dependencies)
+## 필수 의존성
 
-개발 환경에서만 필요한 도구 및 패키지입니다.
+반드시 설치해야 하는 패키지들입니다.
 
-| 패키지 | 버전 | 용도 |
-|--------|------|------|
-| `vite` | ^7.2.4 | 빌드 도구 및 개발 서버 |
-| `@vitejs/plugin-react-swc` | ^4.2.2 | Vite용 React 플러그인 (SWC 컴파일러 사용) |
-| `eslint` | ^9.39.1 | JavaScript/React 코드 린터 |
-| `@eslint/js` | ^9.39.1 | ESLint JavaScript 설정 |
-| `eslint-plugin-react-hooks` | ^7.0.1 | React Hooks 린터 규칙 |
-| `eslint-plugin-react-refresh` | ^0.4.24 | React Fast Refresh 린터 규칙 |
-| `globals` | ^16.5.0 | ESLint 글로벌 변수 설정 |
-| `@types/react` | ^19.2.5 | React TypeScript 타입 정의 (타입 체크용) |
-| `@types/react-dom` | ^19.2.3 | React DOM TypeScript 타입 정의 |
-
-## 🚀 설치 방법
-
-### 전체 의존성 설치
-
-프로젝트 루트 디렉토리에서 다음 명령어를 실행하세요:
+### 1. **react** & **react-dom**
 
 ```bash
-npm install
-```
-
-또는
-
-```bash
-npm ci
-```
-
-> **참고**: `npm ci`는 `package-lock.json`을 기반으로 정확한 버전을 설치하므로 CI/CD 환경에서 권장됩니다.
-
-### 개별 패키지 설치
-
-특정 패키지만 설치하려면:
-
-#### 프로덕션 의존성
-
-```bash
-# React 핵심 라이브러리
 npm install react react-dom
+```
 
-# 라우팅
+- **이유**: React 애플리케이션의 핵심 라이브러리
+- **사용 위치**: 모든 컴포넌트에서 사용
+- **버전**: `^19.2.0` (현재 프로젝트 기준)
+
+### 2. **react-router-dom**
+
+```bash
 npm install react-router-dom
+```
 
-# HTTP 클라이언트
+- **이유**: 클라이언트 사이드 라우팅을 위해 필요
+- **사용 위치**:
+  - `App.jsx`: `BrowserRouter`, `Routes`, `Route`
+  - `Login.jsx`, `GNB.jsx` 등: `Link`, `useNavigate`, `useSearchParams`, `useLocation`
+- **버전**: `^7.9.6` (현재 프로젝트 기준)
+
+### 3. **axios**
+
+```bash
 npm install axios
+```
 
-# 3D 그래픽 라이브러리
-npm install three @react-three/fiber @react-three/drei
+- **이유**: HTTP 클라이언트 (API 호출)
+- **사용 위치**:
+  - `utils/axiosConfig.js`: API 클라이언트 설정 및 인터셉터
+  - `pages/Home.jsx`, `pages/Signup.jsx`: 직접 API 호출
+  - `contexts/AuthProvider.jsx`: 인증 관련 API 호출
+- **버전**: `^1.13.2` (현재 프로젝트 기준)
 
-# 아이콘 라이브러리
+### 4. **@fortawesome/fontawesome-free**
+
+```bash
 npm install @fortawesome/fontawesome-free
 ```
 
-#### 개발 의존성
+- **이유**: 아이콘 사용을 위해 필요
+- **사용 위치**: `pages/Login.jsx`에서 아이콘 표시
+- **버전**: `^7.1.0` (현재 프로젝트 기준)
+
+---
+
+## 선택적 의존성
+
+기능에 따라 선택적으로 설치할 수 있는 패키지들입니다.
+
+### 5. **@react-three/fiber**, **@react-three/drei**, **three**
 
 ```bash
-# 빌드 도구
-npm install -D vite @vitejs/plugin-react-swc
-
-# 린터
-npm install -D eslint @eslint/js eslint-plugin-react-hooks eslint-plugin-react-refresh globals
-
-# TypeScript 타입 정의
-npm install -D @types/react @types/react-dom
+npm install @react-three/fiber @react-three/drei three
 ```
 
-### 한 번에 설치 (권장)
+- **이유**: 3D 그래픽 렌더링 (Welcome 페이지의 장식용)
+- **사용 위치**: `components/FloatingShapes.jsx`에서만 사용
+- **설치 여부**: 
+  - ✅ Welcome 페이지의 3D 애니메이션이 필요하면 설치
+  - ❌ 단순한 UI만 필요하면 제거 가능 (FloatingShapes 컴포넌트 제거 필요)
+- **버전**: 
+  - `@react-three/fiber`: `^9.4.0`
+  - `@react-three/drei`: `^10.7.7`
+  - `three`: `^0.181.2`
 
-모든 의존성을 한 번에 설치하는 명령어:
+---
+
+## 개발 의존성
+
+개발 환경에서 필요한 패키지들입니다.
+
+### 6. **@vitejs/plugin-react-swc**
 
 ```bash
-# 프로덕션 의존성
-npm install react react-dom react-router-dom axios three @react-three/fiber @react-three/drei @fortawesome/fontawesome-free
+npm install -D @vitejs/plugin-react-swc
+```
+
+- **이유**: Vite에서 React를 사용하기 위한 플러그인
+- **사용 위치**: `vite.config.js`에서 사용
+- **참고**: Vite를 설치했다면 이것도 반드시 필요합니다.
+- **버전**: `^4.2.2` (현재 프로젝트 기준)
+
+### 7. **ESLint 관련** (선택)
+
+```bash
+npm install -D eslint @eslint/js eslint-plugin-react-hooks eslint-plugin-react-refresh globals
+```
+
+- **이유**: 코드 린팅 (코드 품질 검사)
+- **설치 여부**: 
+  - ✅ 코드 품질 검사가 필요하면 설치
+  - ❌ 린팅이 필요 없으면 생략 가능
+- **버전**:
+  - `eslint`: `^9.39.1`
+  - `@eslint/js`: `^9.39.1`
+  - `eslint-plugin-react-hooks`: `^7.0.1`
+  - `eslint-plugin-react-refresh`: `^0.4.24`
+  - `globals`: `^16.5.0`
+
+---
+
+## 설치하지 않아도 되는 것
+
+### TypeScript 관련
+
+- `@types/react`
+- `@types/react-dom`
+
+**이유**: 이 프로젝트는 JavaScript를 사용합니다 (`.jsx` 파일). TypeScript를 사용하지 않으므로 타입 정의 파일이 필요 없습니다.
+
+---
+
+## 빠른 설치 가이드
+
+### 최소 설치 (필수만)
+
+프로젝트의 핵심 기능만 사용하려면 다음만 설치하면 됩니다:
+
+```bash
+# 필수 의존성
+npm install react react-dom react-router-dom axios @fortawesome/fontawesome-free
+
+# Vite React 플러그인 (Vite 사용 시 필수)
+npm install -D @vitejs/plugin-react-swc
+```
+
+### 전체 설치 (권장)
+
+모든 기능을 사용하려면 다음을 설치하세요:
+
+```bash
+# 필수 의존성
+npm install react react-dom react-router-dom axios @fortawesome/fontawesome-free
+
+# 선택적 의존성 (3D 그래픽 사용 시)
+npm install @react-three/fiber @react-three/drei three
 
 # 개발 의존성
-npm install -D vite @vitejs/plugin-react-swc eslint @eslint/js eslint-plugin-react-hooks eslint-plugin-react-refresh globals @types/react @types/react-dom
+npm install -D @vitejs/plugin-react-swc eslint @eslint/js eslint-plugin-react-hooks eslint-plugin-react-refresh globals
 ```
 
-## 📋 각 의존성 상세 설명
-
-### React 관련
-
-- **react**: 사용자 인터페이스를 구축하기 위한 JavaScript 라이브러리
-- **react-dom**: React 컴포넌트를 DOM에 렌더링하는 라이브러리
-- **react-router-dom**: 단일 페이지 애플리케이션(SPA)에서 클라이언트 사이드 라우팅을 제공
-
-### HTTP 통신
-
-- **axios**: Promise 기반의 HTTP 클라이언트로, RESTful API와 통신할 때 사용
-
-### 3D 그래픽
-
-- **three**: 웹에서 3D 그래픽을 렌더링하기 위한 JavaScript 라이브러리
-- **@react-three/fiber**: Three.js를 React 컴포넌트로 사용할 수 있게 해주는 라이브러리
-- **@react-three/drei**: Three.js 작업을 쉽게 해주는 유틸리티 및 헬퍼 함수 모음
-
-### UI/UX
-
-- **@fortawesome/fontawesome-free**: 다양한 아이콘을 제공하는 라이브러리
-
-### 빌드 도구
-
-- **vite**: 빠른 개발 서버와 빌드 도구
-- **@vitejs/plugin-react-swc**: Vite에서 React를 사용하기 위한 플러그인 (SWC 컴파일러 사용)
-
-### 코드 품질
-
-- **eslint**: JavaScript/React 코드의 오류와 잠재적 문제를 찾아주는 린터
-- **eslint-plugin-react-hooks**: React Hooks 규칙을 검사하는 플러그인
-- **eslint-plugin-react-refresh**: React Fast Refresh와 호환되는 코드인지 검사
-
-## 🔧 프로젝트 설정 파일
-
-### package.json
-
-프로젝트의 메타데이터와 의존성 정보를 포함합니다.
-
-### vite.config.js
-
-Vite 빌드 도구 설정 파일입니다. 현재 설정:
-- React 플러그인 사용
-- `/api` 경로를 `http://127.0.0.1:9080`으로 프록시 설정
-
-### eslint.config.js
-
-ESLint 린터 설정 파일입니다.
-
-## 📝 스크립트 명령어
-
-`package.json`에 정의된 스크립트:
+### 한 번에 설치
 
 ```bash
-# 개발 서버 실행
-npm run dev
+npm install react react-dom react-router-dom axios @fortawesome/fontawesome-free @react-three/fiber @react-three/drei three
 
-# 프로덕션 빌드
-npm run build
-
-# 코드 린팅
-npm run lint
-
-# 빌드 결과 미리보기
-npm run preview
+npm install -D @vitejs/plugin-react-swc eslint @eslint/js eslint-plugin-react-hooks eslint-plugin-react-refresh globals
 ```
 
-## ⚠️ 주의사항
+---
 
-1. **Node.js 버전**: Node.js 18 이상이 필요합니다.
-2. **npm 버전**: npm 9 이상을 권장합니다.
-3. **의존성 충돌**: 설치 중 의존성 충돌이 발생하면 `package-lock.json`을 삭제하고 다시 설치하세요:
+## 의존성 요약표
+
+| 패키지 | 필수 여부 | 용도 | 설치 명령어 |
+|--------|----------|------|------------|
+| `react` | ✅ 필수 | React 핵심 라이브러리 | `npm install react react-dom` |
+| `react-dom` | ✅ 필수 | React DOM 렌더링 | `npm install react react-dom` |
+| `react-router-dom` | ✅ 필수 | 클라이언트 사이드 라우팅 | `npm install react-router-dom` |
+| `axios` | ✅ 필수 | HTTP 클라이언트 | `npm install axios` |
+| `@fortawesome/fontawesome-free` | ✅ 필수 | 아이콘 | `npm install @fortawesome/fontawesome-free` |
+| `@react-three/fiber` | ⚠️ 선택 | 3D 그래픽 (React Three Fiber) | `npm install @react-three/fiber` |
+| `@react-three/drei` | ⚠️ 선택 | 3D 그래픽 헬퍼 | `npm install @react-three/drei` |
+| `three` | ⚠️ 선택 | 3D 그래픽 라이브러리 | `npm install three` |
+| `@vitejs/plugin-react-swc` | ✅ 필수 | Vite React 플러그인 | `npm install -D @vitejs/plugin-react-swc` |
+| ESLint 관련 | ⚠️ 선택 | 코드 품질 검사 | `npm install -D eslint ...` |
+
+---
+
+## 설치 후 확인
+
+설치가 완료되면 다음 명령어로 프로젝트를 실행할 수 있습니다:
+
+```bash
+npm run dev
+```
+
+브라우저에서 `http://localhost:5173` (또는 Vite가 지정한 포트)로 접속하여 확인하세요.
+
+---
+
+## 문제 해결
+
+### 패키지 설치 오류
+
+만약 패키지 설치 중 오류가 발생하면:
+
+1. **node_modules 폴더 삭제 후 재설치**
    ```bash
    rm -rf node_modules package-lock.json
    npm install
    ```
 
-## 🔄 의존성 업데이트
+2. **npm 캐시 클리어**
+   ```bash
+   npm cache clean --force
+   npm install
+   ```
 
-### 특정 패키지 업데이트
+3. **Node.js 버전 확인**
+   - 권장: Node.js 18.x 이상
+   - 확인: `node --version`
 
-```bash
-# 최신 버전으로 업데이트
-npm update <package-name>
+### Vite 관련 오류
 
-# 최신 버전 확인
-npm outdated
-```
+Vite가 제대로 작동하지 않으면:
 
-### 모든 의존성 업데이트
+1. **Vite 설치 확인**
+   ```bash
+   npm list vite
+   ```
 
-```bash
-# npm-check-updates 사용 (권장)
-npx npm-check-updates -u
-npm install
-```
-
-## 📚 추가 리소스
-
-- [React 공식 문서](https://react.dev/)
-- [React Router 문서](https://reactrouter.com/)
-- [Three.js 문서](https://threejs.org/)
-- [Vite 문서](https://vite.dev/)
-- [Axios 문서](https://axios-http.com/)
+2. **Vite React 플러그인 확인**
+   ```bash
+   npm list @vitejs/plugin-react-swc
+   ```
 
 ---
 
-**마지막 업데이트**: 2024년
+## 참고 자료
 
+- [React 공식 문서](https://react.dev/)
+- [React Router 공식 문서](https://reactrouter.com/)
+- [Axios 공식 문서](https://axios-http.com/)
+- [Vite 공식 문서](https://vite.dev/)
+- [Font Awesome 공식 문서](https://fontawesome.com/)
+
+---
+
+**마지막 업데이트**: 2025년 1월

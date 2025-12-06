@@ -1,0 +1,104 @@
+.kakao-callback-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 120px 20px 100px;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+.kakao-callback-card {
+  background: rgba(26, 26, 26, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 3rem;
+  width: 500px;
+  max-width: 500px;
+  box-sizing: border-box;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.kakao-callback-card h2 {
+  color: white;
+  margin-top: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.kakao-callback-card p {
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #FEE500;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.success-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #4caf50;
+  color: white;
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  font-weight: bold;
+}
+
+.error-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #f44336;
+  color: white;
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  font-weight: bold;
+}
+
+/* 라이트 모드일 때 스타일 */
+@media (prefers-color-scheme: light) {
+  .kakao-callback-card {
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.1),
+      0 0 0 1px rgba(0, 0, 0, 0.1);
+  }
+
+  .kakao-callback-card h2 {
+    color: #1a1a1a;
+  }
+
+  .kakao-callback-card p {
+    color: rgba(26, 26, 26, 0.7);
+  }
+
+  .spinner {
+    border-color: rgba(0, 0, 0, 0.1);
+    border-top-color: #FEE500;
+  }
+}

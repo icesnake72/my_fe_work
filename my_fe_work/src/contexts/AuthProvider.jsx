@@ -46,10 +46,10 @@
  * - 코드가 더 읽기 쉬움
  * - 일관성 있는 API 제공
  */
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { AuthContext } from './AuthContext'
 import apiClient from '../utils/axiosConfig'
-import { setAccessToken, clearAccessToken } from '../utils/tokenStorage'
+import { setAccessToken, clearAccessToken, addTokenChangeListener } from '../utils/tokenStorage'
 
 /**
  * AuthProvider 컴포넌트
@@ -91,7 +91,15 @@ export const AuthProvider = ({ children }) => {
     return null
   })
   
-  // accessToken 상태 변경 시 모듈 변수도 동기화
+  // setAccessTokenState 함수의 최신 참조를 유지하기 위한 ref
+  const setAccessTokenStateRef = useRef(setAccessTokenState)
+  
+  // setAccessTokenState가 변경될 때마다 ref 업데이트
+  useEffect(() => {
+    setAccessTokenStateRef.current = setAccessTokenState
+  }, [setAccessTokenState])
+  
+  // React state → 모듈 변수 동기화 (단방향)
   useEffect(() => {
     if (accessToken) {
       setAccessToken(accessToken)
@@ -99,6 +107,25 @@ export const AuthProvider = ({ children }) => {
       clearAccessToken()
     }
   }, [accessToken])
+  
+  // 모듈 변수 → React state 동기화 (양방향 동기화 완성)
+  // axios interceptor에서 토큰을 갱신할 때 React state도 업데이트되도록 함
+  useEffect(() => {
+    const removeListener = addTokenChangeListener((newToken) => {
+      // 모듈 변수가 변경되었을 때 React state도 업데이트
+      // ref를 사용하여 항상 최신 setAccessTokenState 함수 참조
+      // 현재 state와 다를 때만 업데이트하여 무한 루프 방지
+      setAccessTokenStateRef.current((currentToken) => {
+        if (currentToken !== newToken) {
+          return newToken
+        }
+        return currentToken
+      })
+    })
+    
+    // 컴포넌트 언마운트 시 리스너 제거
+    return removeListener
+  }, []) // 마운트 시 한 번만 실행 (ref를 사용하므로 의존성 불필요)
   
   /**
    * 사용자 정보 상태
